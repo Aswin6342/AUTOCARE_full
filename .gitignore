@@ -1,0 +1,29 @@
+# ===== NODE =====
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ===== ENV =====
+.env
+.env.local
+.env.production
+
+# ===== BUILD =====
+dist/
+build/
+
+# ===== OS =====
+.DS_Store
+Thumbs.db
+
+# ===== VITE =====
+autocare-frontend/node_modules/
+autocare-frontend/dist/
+
+# ===== BACKEND =====
+backend/node_modules/
+
+# ===== LOGS =====
+logs
+*.log
