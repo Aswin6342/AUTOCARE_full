@@ -1,7 +1,7 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:5000";
-
+//const API_URL = "http://localhost:5000";
+const API_URL = "https://autocare-full.onrender.com"
 /* ================= AXIOS INSTANCE ================= */
 const api = axios.create({
   baseURL: API_URL,
