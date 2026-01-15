@@ -14,15 +14,7 @@ const port = 5000;
 /* =======================
    ✅ CORS (ENOUGH FOR PREFLIGHT)
 ======================= */
-app.use(
-  cors({
-    origin: [
-      "http://localhost:5173",
-      "https://autocare-full.vercel.app",   // 👈 your frontend URL
-    ],
-    credentials: true,
-  })
-);
+app.use(cors());
 
 
 /* =======================

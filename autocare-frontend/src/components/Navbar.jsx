@@ -46,7 +46,7 @@ export default function Navbar() {
           {/* ---------- USER NAV ---------- */}
           {isAuth && !isAdmin && (
             <>
-              <NavLink to="/dashboard" className={linkClass}>Hub</NavLink>
+              <NavLink to="/dashboard" className={linkClass}>Home</NavLink>
               <NavLink to="/my-vehicles" className={linkClass}>My Vehicles</NavLink>
               <NavLink to="/add-vehicle" className={linkClass}>Add Vehicle</NavLink>
               <NavLink to="/notifications" className={linkClass}>Notifications</NavLink>
@@ -109,7 +109,7 @@ export default function Navbar() {
 
           {isAuth && !isAdmin && (
             <>
-              <NavLink to="/dashboard" onClick={() => setOpen(false)} className={linkClass}>Hub</NavLink>
+              <NavLink to="/dashboard" onClick={() => setOpen(false)} className={linkClass}>Home</NavLink>
               <NavLink to="/my-vehicles" onClick={() => setOpen(false)} className={linkClass}>My Vehicles</NavLink>
               <NavLink to="/add-vehicle" onClick={() => setOpen(false)} className={linkClass}>Add Vehicle</NavLink>
               <NavLink to="/notifications" onClick={() => setOpen(false)} className={linkClass}>Notifications</NavLink>

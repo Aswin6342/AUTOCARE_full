@@ -23,24 +23,56 @@ export default function MyVehicles() {
 
   /* ================= SERVICE STATUS ================= */
   const getServiceStatus = (nextServiceDate) => {
-    const today = new Date();
-    const serviceDate = new Date(nextServiceDate);
+  const today = new Date();
+  const serviceDate = new Date(nextServiceDate);
 
-    const diffDays = Math.ceil(
-      (serviceDate - today) / (1000 * 60 * 60 * 24)
-    );
+  // Remove time part to avoid wrong day calculation
+  today.setHours(0, 0, 0, 0);
+  serviceDate.setHours(0, 0, 0, 0);
 
-    if (diffDays < 0)
-      return { label: "Overdue", color: "bg-red-600" };
+  const diffDays = Math.ceil(
+    (serviceDate - today) / (1000 * 60 * 60 * 24)
+  );
 
-    if (diffDays <= 3)
-      return { label: "Service in 3 days", color: "bg-orange-600" };
+  // 🚨 Overdue
+  if (diffDays < 0) {
+    return {
+      label: `Overdue by ${Math.abs(diffDays)} day${Math.abs(diffDays) > 1 ? "s" : ""}`,
+      color: "bg-red-600",
+    };
+  }
 
-    if (diffDays <= 7)
-      return { label: "Service in 7 days", color: "bg-yellow-500" };
+  // 🔥 Today
+  if (diffDays === 0) {
+    return {
+      label: "Service Today",
+      color: "bg-red-600",
+    };
+  }
 
-    return { label: "Upcoming", color: "bg-green-600" };
+  // ⏳ Within 3 days
+  if (diffDays <= 3) {
+    return {
+      label: `Service in ${diffDays} day${diffDays > 1 ? "s" : ""}`,
+      color: "bg-orange-600",
+    };
+  }
+
+  // ⚠️ Within 7 days
+  if (diffDays <= 7) {
+    return {
+      label: `Service in ${diffDays} days`,
+      color: "bg-yellow-500",
+    };
+  }
+
+  // ✅ More than 7 days
+  return {
+    label: `Upcoming`,
+    color: "bg-green-600",
   };
+};
+
 
   /* ================= FETCH ================= */
   const fetchVehicles = async () => {
