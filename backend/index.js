@@ -14,7 +14,37 @@ const port = 5000;
 /* =======================
    ✅ CORS (ENOUGH FOR PREFLIGHT)
 ======================= */
-app.use(cors());
+
+// app.use(cors({
+//   origin: [
+//     "http://localhost:5173",
+//     "https://autocare-front.onrender.com"
+//   ],
+//   methods: ["GET", "POST", "PUT", "DELETE"],
+//   credentials: true
+// }));
+
+
+const allowedOrigins = [
+   "https://autocare-front.onrender.com",
+  "http://localhost:5173",
+];
+
+
+
+app.use(cors({
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    } else {
+      return callback(new Error("Not allowed by CORS"));
+    }
+  },
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  credentials: true,
+}));
 
 
 /* =======================
