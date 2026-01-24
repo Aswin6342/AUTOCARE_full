@@ -80,15 +80,14 @@ export const addVehicle = async (req, res) => {
       success: true,
       vehicle: newVehicle,
     });
+} catch (error) {
+  console.error("❌ ADD VEHICLE ERROR:", error.message);
+  res.status(500).json({
+    success: false,
+    message: error.message,
+  });
+}
 
-  } catch (error) {
-    console.error("ADD VEHICLE ERROR:", error);
-    res.status(500).json({
-      success: false,
-      message: "Failed to add vehicle",
-    });
-  }
-};
 
 /* ================= GET MY VEHICLES (USER) ================= */
 export const getMyVehicles = async (req, res) => {
@@ -163,14 +162,14 @@ export const updateVehicle = async (req, res) => {
       success: true,
       vehicle: updatedVehicle,
     });
-  } catch (error) {
-    console.error("UPDATE VEHICLE ERROR:", error);
-    res.status(500).json({
-      success: false,
-      message: "Failed to update vehicle",
-    });
-  }
-};
+} catch (error) {
+  console.error("❌ ADD VEHICLE ERROR:", error.message);
+  res.status(500).json({
+    success: false,
+    message: error.message,
+  });
+}
+
 
 
 /* ================= DELETE VEHICLE (USER) ================= */

@@ -2,10 +2,8 @@ import nodemailer from "nodemailer";
 
 export const sendEmail = async ({ to, subject, html }) => {
   try {
-    console.log("📧 Email ENV CHECK:", {
-      user: process.env.EMAIL_USER ? "OK" : "MISSING",
-      pass: process.env.EMAIL_PASS ? "OK" : "MISSING",
-    });
+    console.log("📧 EMAIL_USER:", process.env.EMAIL_USER ? "FOUND" : "MISSING");
+    console.log("📧 EMAIL_PASS:", process.env.EMAIL_PASS ? "FOUND" : "MISSING");
 
     const transporter = nodemailer.createTransport({
       host: "smtp.gmail.com",
@@ -17,8 +15,6 @@ export const sendEmail = async ({ to, subject, html }) => {
       },
     });
 
-    console.log("📧 Transporter created");
-
     const info = await transporter.sendMail({
       from: `"AutoCare" <${process.env.EMAIL_USER}>`,
       to,
@@ -27,11 +23,8 @@ export const sendEmail = async ({ to, subject, html }) => {
     });
 
     console.log("✅ Email sent:", info.messageId);
-    return true;
-
   } catch (error) {
-    console.error("❌ EMAIL ERROR:", error);
+    console.error("❌ EMAIL ERROR:", error.message);
     throw error; // VERY IMPORTANT
   }
 };
-
