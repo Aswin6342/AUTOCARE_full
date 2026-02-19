@@ -193,3 +193,64 @@ export const resetPassword = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* ========== ADMIN STATS ========== */
+export const adminStats = async (req, res) => {
+  try {
+    const totalUsers = await user1.countDocuments();
+    const verifiedUsers = await user1.countDocuments({ isVerified: true });
+
+    res.json({
+      success: true,
+      totalUsers,
+      verifiedUsers,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false });
+  }
+};
+
+/* ========== GET ALL USERS ========== */
+export const getAllUsers = async (req, res) => {
+  try {
+    const users = await user1.find().sort({ createdAt: -1 });
+
+    res.json({ success: true, users });
+  } catch {
+    res.status(500).json({ success: false });
+  }
+};
+
+/* ========== DELETE USER ========== */
+export const deleteUser = async (req, res) => {
+  try {
+    const user = await user1.findByIdAndDelete(req.params.id);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    res.json({
+      success: true,
+      message: "User deleted",
+    });
+  } catch {
+    res.status(500).json({ success: false });
+  }
+};

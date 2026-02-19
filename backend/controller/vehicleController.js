@@ -87,6 +87,7 @@ export const addVehicle = async (req, res) => {
     message: error.message,
   });
 }
+};
 
 
 /* ================= GET MY VEHICLES (USER) ================= */
@@ -169,6 +170,7 @@ export const updateVehicle = async (req, res) => {
     message: error.message,
   });
 }
+};
 
 
 

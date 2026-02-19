@@ -11,15 +11,21 @@ import {
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 
-export default function Dashboard() {
+// ✅ ICONS
+import {
+  Car,
+  Bike,
+  Plus,
+  Eye,
+  Wrench,
+} from "lucide-react";
 
+export default function Dashboard() {
   const navigate = useNavigate();
 
   const [vehicles, setVehicles] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [flip, setFlip] = useState(false);
 
-  // fetch vehicles
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -34,17 +40,9 @@ export default function Dashboard() {
     loadData();
   }, []);
 
-  // logo flip scroll effect
-  useEffect(() => {
-    const h = () => setFlip((p) => !p);
-    window.addEventListener("scroll", h);
-    return () => window.removeEventListener("scroll", h);
-  }, []);
-
-  // vehicle counts for chart
-  const car = vehicles.filter(v => v.vehicleType === "Car").length;
-  const bike = vehicles.filter(v => v.vehicleType === "Bike").length;
-  const scooter = vehicles.filter(v => v.vehicleType === "Scooter").length;
+  const car = vehicles.filter((v) => v.vehicleType === "Car").length;
+  const bike = vehicles.filter((v) => v.vehicleType === "Bike").length;
+  const scooter = vehicles.filter((v) => v.vehicleType === "Scooter").length;
 
   const total = car + bike + scooter;
 
@@ -56,7 +54,6 @@ export default function Dashboard() {
 
   const isZero = total === 0;
 
-  // service due helper
   const getDaysLeft = (next) => {
     if (!next) return null;
     const t = new Date();
@@ -64,7 +61,6 @@ export default function Dashboard() {
     return Math.ceil((n - t) / (1000 * 60 * 60 * 24));
   };
 
-  // ⭐ label renderer for chart
   const renderLabel = ({
     cx,
     cy,
@@ -91,11 +87,10 @@ export default function Dashboard() {
         fill="white"
         textAnchor="middle"
         dominantBaseline="central"
-        fontWeight={700}
-        fontSize={12}
+        fontSize={11}
       >
-        {item.name} ({item.value})
-        <tspan x={x} dy="1.1em" fontSize={10}>
+        {item.name}
+        <tspan x={x} dy="1.1em" fontSize={9}>
           {(percent * 100).toFixed(0)}%
         </tspan>
       </text>
@@ -103,68 +98,57 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="relative min-h-screen px-6 pt-24 pb-16 overflow-hidden bg-gradient-to-br from-[#0f0f0f] via-[#141414] to-[#0c0c0c]">
-
-      {/* glowing blur background */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute -top-40 -left-20 w-[420px] h-[420px] bg-red-600/30 rounded-full blur-[120px]" />
-        <div className="absolute bottom-0 right-0 w-[380px] h-[380px] bg-blue-600/25 rounded-full blur-[120px]" />
-      </div>
-
-      {/* split color animated logo */}
-      <motion.h1
-        animate={{ backgroundPosition: flip ? "100% 0%" : "0% 0%" }}
-        transition={{ duration: 0.6 }}
-        className="fixed top-24 left-1/2 -translate-x-1/2 select-none pointer-events-none text-[200px] font-extrabold tracking-wider opacity-[0.2] blur-[1.5px] bg-clip-text text-transparent"
-        style={{
-          backgroundImage: flip
-            ? "linear-gradient(to right, #2563eb 50%, #ef4444 50%)"
-            : "linear-gradient(to right, #ef4444 50%, #2563eb 50%)",
-        }}
-      >
-        AUTOCARE
-      </motion.h1>
+    <div className="min-h-screen bg-[#0b0b0b] text-white px-6 py-10 mt-11">
 
       {/* HEADER */}
-      <h2 className="text-4xl font-extrabold text-white">AutoCare Hub</h2>
-      <p className="text-gray-300 mb-8">Do not risk your vehicle's life</p>
-
-      {/* QUICK ACTIONS */}
-      <div className="rounded-3xl border border-white/20 bg-white/5 backdrop-blur-xl p-6 mb-10">
-        <h3 className="text-xl text-white font-semibold mb-4">Quick Actions</h3>
-
-        <div className="flex gap-4 flex-wrap">
-
-          {/* ➕ add vehicle page */}
-          <button
-            onClick={() => navigate("/add-vehicle")}
-            className="px-5 py-2.5 rounded-xl bg-gray-950 hover:bg-gray-700 text-white font-semibold"
-          >
-            Add Vehicle
-          </button>
-
-          {/* 👀 all vehicles page */}
-          <button
-            onClick={() => navigate("/my-vehicles")}
-            className="px-5 py-2.5 rounded-xl bg-gray-950 hover:bg-gray-700 text-white font-semibold"
-          >
-            View All Vehicles
-          </button>
+      <div className="flex items-center gap-3 mb-10">
+        <Wrench className="text-red-500" size={32} />
+        <div>
+          <h1 className="text-3xl font-bold">AutoCare</h1>
+          <p className="text-gray-400 text-sm">
+            Track and manage your vehicle services
+          </p>
         </div>
       </div>
 
-      {/* MAIN GRID */}
+      {/* QUICK ACTIONS */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10">
+
+        <button
+          onClick={() => navigate("/add-vehicle")}
+          className="flex items-center justify-between bg-gradient-to-r from-slate-950 to-red-600 p-5 rounded-xl hover:scale-[1.02] transition"
+        >
+          <div>
+            <p className="text-lg font-semibold">Add Vehicle</p>
+            <p className="text-sm opacity-80">Register new vehicle</p>
+          </div>
+          <Plus />
+        </button>
+
+        <button
+          onClick={() => navigate("/my-vehicles")}
+          className="flex items-center justify-between bg-gradient-to-r from-slate-600 to-blue-600 p-5 rounded-xl hover:scale-[1.02] transition"
+        >
+          <div>
+            <p className="text-lg font-semibold">View Vehicles</p>
+            <p className="text-sm opacity-80">Check all vehicles</p>
+          </div>
+          <Eye />
+        </button>
+      </div>
+
+      {/* GRID */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
 
-        {/* CHART PANEL */}
-        <div className="rounded-3xl border border-white/20 bg-white/5 backdrop-blur-xl p-6">
-          <h3 className="text-xl font-semibold text-white mb-4">
-            Vehicle Type Distribution
+        {/* CHART */}
+        <div className="bg-[#121212] border border-white/10 rounded-2xl p-6 shadow-lg">
+          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+            <Car size={18} /> Vehicle Distribution
           </h3>
 
-          <div className="w-full h-[330px]">
+          <div className="h-[300px]">
             {loading ? (
-              <div className="flex h-full items-center justify-center text-white">
+              <div className="flex h-full items-center justify-center text-gray-400">
                 Loading...
               </div>
             ) : (
@@ -175,19 +159,20 @@ export default function Dashboard() {
                     dataKey="value"
                     cx="50%"
                     cy="50%"
-                    innerRadius={70}
-                    outerRadius={110}
-                    paddingAngle={3}
+                    innerRadius={60}
+                    outerRadius={100}
+                    paddingAngle={4}
                     label={renderLabel}
                     labelLine={false}
                   >
                     {isZero
-                      ? chartData.map((_, i) => <Cell key={i} fill="#000000" />)
+                      ? chartData.map((_, i) => (
+                          <Cell key={i} fill="#222" />
+                        ))
                       : chartData.map((x, i) => (
-                        <Cell key={i} fill={x.color} />
-                      ))}
+                          <Cell key={i} fill={x.color} />
+                        ))}
                   </Pie>
-
                   {!isZero && <Tooltip />}
                 </PieChart>
               </ResponsiveContainer>
@@ -196,60 +181,70 @@ export default function Dashboard() {
         </div>
 
         {/* VEHICLE LIST */}
-        <div className="rounded-3xl border border-white/20 bg-white/5 backdrop-blur-xl p-6">
-          <h3 className="text-xl font-semibold text-white mb-4">
-            Your Vehicles
+        <div className="bg-[#121212] border border-white/10 rounded-2xl p-6 shadow-lg">
+          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+            <Bike size={18} /> Your Vehicles
           </h3>
 
           {!loading && vehicles.length === 0 && (
-            <p className="text-gray-400">No vehicles yet 🚗</p>
+            <p className="text-gray-500">No vehicles added yet</p>
           )}
 
-          <div className="space-y-3">
-            {vehicles.map(v => {
+          <div className="space-y-4">
+            {vehicles.map((v) => {
               const days = getDaysLeft(v.nextServiceDate);
 
               return (
                 <motion.div
                   key={v._id}
-                  whileHover={{ scale: 1.01 }}
-                  onClick={() => navigate("/myvehicles")}
-                  className="cursor-pointer rounded-2xl bg-white/10 backdrop-blur-md border border-white/30 p-4 flex justify-between"
+                  whileHover={{ scale: 1.02 }}
+                  onClick={() => navigate("/my-vehicles")}
+                  className="bg-[#1a1a1a] border border-white/10 rounded-xl p-4 flex justify-between items-center cursor-pointer hover:bg-[#222]"
                 >
-                  <div>
-                    <p className="text-white font-bold">
-                      {v.vehicleType} —
-                      {v.regNo || v.registrationNumber || v.registration_number || "No Reg No"}
-                    </p>
+                  <div className="flex items-center gap-3">
 
-                    <p className="text-sm text-gray-300">
-                      Next Service:{" "}
-                      {v.nextServiceDate
-                        ? new Date(v.nextServiceDate).toDateString()
-                        : "Not set"}
-                    </p>
+                    {/* icon based on type */}
+                    {v.vehicleType === "Car" && <Car size={20} />}
+                    {v.vehicleType === "Bike" && <Bike size={20} />}
+                    {v.vehicleType === "Scooter" && <Bike size={20} />}
+
+                    <div>
+                      <p className="font-semibold">
+                        {v.vehicleType} •{" "}
+                        {v.regNo ||
+                          v.registrationNumber ||
+                          "No Reg No"}
+                      </p>
+
+                      <p className="text-sm text-gray-400 mt-1">
+                        {v.nextServiceDate
+                          ? new Date(
+                              v.nextServiceDate
+                            ).toDateString()
+                          : "Service not scheduled"}
+                      </p>
+                    </div>
                   </div>
 
                   <span
-                    className={`
-                      px-3 py-1 rounded-full text-sm font-semibold
-                      ${days === null
-                        ? "bg-gray-300 text-black"
+                    className={`px-3 py-1 text-xs rounded-full font-semibold
+                    ${
+                      days === null
+                        ? "bg-gray-400 text-black"
                         : days < 0
-                          ? "bg-red-400 text-black"
-                          : days === 0
-                            ? "bg-yellow-300 text-black"
-                            : "bg-green-300 text-black"
-                      }
-                    `}
+                        ? "bg-red-500"
+                        : days === 0
+                        ? "bg-yellow-400 text-black"
+                        : "bg-green-500"
+                    }`}
                   >
                     {days === null
                       ? "N/A"
                       : days < 0
-                        ? "Overdue"
-                        : days === 0
-                          ? "Due Today"
-                          : `${days} days left`}
+                      ? "Overdue"
+                      : days === 0
+                      ? "Today"
+                      : `${days} days`}
                   </span>
                 </motion.div>
               );
