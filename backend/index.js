@@ -9,41 +9,41 @@ import notificationRouter from "./Router/notificationRouter.js";
 import { startServiceReminderCron } from "./cron/serviceReminder.js";
 
 const app = express();
-const port = 5000;
+const port = process.env.PORT || 5000;
 
 /* =======================
-   ✅ CORS (ENOUGH FOR PREFLIGHT)
+   ✅ CORS (FIXED)
 ======================= */
-
-// app.use(cors({
-//   origin: [
-//     "http://localhost:5173",
-//     "https://autocare-front.onrender.com"
-//   ],
-//   methods: ["GET", "POST", "PUT", "DELETE"],
-//   credentials: true
-// }));
-
-
 const allowedOrigins = [
-   "https://autocare-front.onrender.com",
+  "https://autocare-front.onrender.com",
   "http://localhost:5173",
 ];
 
-
-
-app.use(cors({
-  origin: true,
-  credentials: true,
-}));
-
-
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
+  })
+);
 
 /* =======================
    BODY PARSERS
 ======================= */
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+/* =======================
+   TEST ROUTE (IMPORTANT)
+======================= */
+app.get("/", (req, res) => {
+  res.send("AutoCare Backend Running 🚀");
+});
 
 /* =======================
    ROUTES
@@ -62,7 +62,7 @@ connectToDB()
     startServiceReminderCron();
 
     app.listen(port, () => {
-      console.log(`🚀 Server running on http://localhost:${port}`);
+      console.log(`🚀 Server running on port ${port}`);
     });
   })
   .catch((error) => {
