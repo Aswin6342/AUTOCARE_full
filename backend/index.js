@@ -15,7 +15,7 @@ const port = process.env.PORT || 5000;
    ✅ CORS (FIXED)
 ======================= */
 const allowedOrigins = [
-  "https://autocare-front.onrender.com",
+  "https://autocare-full.vercel.app",
   "http://localhost:5173",
 ];
 
