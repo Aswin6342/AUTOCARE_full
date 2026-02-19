@@ -1,31 +1,21 @@
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export const sendEmail = async ({ to, subject, html }) => {
   try {
-    console.log("📧 EMAIL_USER:", process.env.EMAIL_USER ? "FOUND" : "MISSING");
-    console.log("📧 EMAIL_PASS:", process.env.EMAIL_PASS ? "FOUND" : "MISSING");
-
-    const transporter = nodemailer.createTransport({
-      service: "gmail", // ✅ IMPORTANT CHANGE
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-      connectionTimeout: 10000, // ✅ avoid long hang
-    });
-
-    const info = await transporter.sendMail({
-      from: `"AutoCare" <${process.env.EMAIL_USER}>`,
+    const response = await resend.emails.send({
+      from: "AutoCare <onboarding@resend.dev>",
       to,
       subject,
       html,
     });
 
-    console.log("✅ Email sent:", info.messageId);
-    return info;
+    console.log("✅ Email sent:", response);
+    return response;
 
   } catch (error) {
-    console.error("❌ EMAIL ERROR FULL:", error);
+    console.error("❌ EMAIL ERROR:", error);
     throw error;
   }
 };
