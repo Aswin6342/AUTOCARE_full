@@ -5,25 +5,35 @@ import { sendEmail } from "../utils/sendEmail.js";
 
 /* ========== SEND OTP (COMMON) ========== */
 const sendOTP = async (user, purpose = "verify") => {
-  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  try {
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-  user.otp = otp;
-  user.otpExpires = Date.now() + 10 * 60 * 1000;
-  await user.save();
+    user.otp = otp;
+    user.otpExpires = Date.now() + 10 * 60 * 1000;
+    await user.save();
 
-  await sendEmail({
-    to: user.email,
-    subject:
-      purpose === "reset"
-        ? "Reset your AutoCare password"
-        : "Verify your AutoCare account",
-    html: `
-      <h3>${purpose === "reset" ? "Password Reset" : "Email Verification"}</h3>
-      <p>Your OTP is:</p>
-      <h2>${otp}</h2>
-      <p>This OTP is valid for 10 minutes.</p>
-    `,
-  });
+    console.log("📧 Sending OTP to:", user.email);
+
+    await sendEmail({
+      to: user.email,
+      subject:
+        purpose === "reset"
+          ? "Reset your AutoCare password"
+          : "Verify your AutoCare account",
+      html: `
+        <h3>${purpose === "reset" ? "Password Reset" : "Email Verification"}</h3>
+        <p>Your OTP is:</p>
+        <h2>${otp}</h2>
+        <p>This OTP is valid for 10 minutes.</p>
+      `,
+    });
+
+    console.log("✅ OTP email sent to:", user.email);
+
+  } catch (error) {
+    console.error("❌ OTP SEND ERROR:", error);
+    throw new Error("Failed to send OTP");
+  }
 };
 
 /* ========== REGISTER USER ========== */
@@ -32,21 +42,35 @@ export const register = async (req, res) => {
     const { name, email, password } = req.body;
 
     if (!name || !email || !password)
-      return res.status(400).json({ success: false, message: "All fields required" });
+      return res.status(400).json({
+        success: false,
+        message: "All fields required",
+      });
 
-    const existingUser = await user1.findOne({ email });
+    let user = await user1.findOne({ email });
 
-    if (existingUser && existingUser.isVerified)
-      return res.status(400).json({ success: false, message: "User already exists" });
+    // 🔥 If user already exists → always resend OTP
+    if (user) {
+      if (user.isVerified) {
+        return res.status(400).json({
+          success: false,
+          message: "User already exists. Please login.",
+        });
+      }
 
-    if (existingUser && !existingUser.isVerified) {
-      await sendOTP(existingUser);
-      return res.json({ success: true, message: "OTP resent" });
+      // resend OTP for unverified user
+      await sendOTP(user);
+
+      return res.json({
+        success: true,
+        message: "OTP resent successfully",
+      });
     }
 
+    // create new user
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const newUser = await user1.create({
+    user = await user1.create({
       name,
       email,
       password: hashedPassword,
@@ -54,15 +78,20 @@ export const register = async (req, res) => {
       isVerified: false,
     });
 
-    await sendOTP(newUser);
+    // send OTP
+    await sendOTP(user);
 
     res.status(201).json({
       success: true,
       message: "Registered successfully. OTP sent.",
     });
+
   } catch (error) {
-    console.error("❌ REGISTER ERROR:", error.message);
-    res.status(500).json({ success: false, message: error.message });
+    console.error("❌ REGISTER ERROR FULL:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
@@ -72,24 +101,42 @@ export const verifyOTP = async (req, res) => {
     const { email, otp } = req.body;
 
     const user = await user1.findOne({ email });
+
     if (!user)
-      return res.status(404).json({ success: false, message: "User not found" });
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
 
     if (user.isVerified)
-      return res.status(400).json({ success: false, message: "Already verified" });
+      return res.status(400).json({
+        success: false,
+        message: "Already verified",
+      });
 
     if (!user.otp || user.otp !== otp || user.otpExpires < Date.now())
-      return res.status(400).json({ success: false, message: "Invalid or expired OTP" });
+      return res.status(400).json({
+        success: false,
+        message: "Invalid or expired OTP",
+      });
 
     user.isVerified = true;
     user.otp = undefined;
     user.otpExpires = undefined;
+
     await user.save();
 
-    res.json({ success: true, message: "Email verified successfully" });
+    res.json({
+      success: true,
+      message: "Email verified successfully",
+    });
+
   } catch (error) {
     console.error("❌ VERIFY OTP ERROR:", error.message);
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
@@ -99,15 +146,26 @@ export const login = async (req, res) => {
     const { email, password } = req.body;
 
     const user = await user1.findOne({ email });
+
     if (!user)
-      return res.status(400).json({ success: false, message: "Invalid credentials" });
+      return res.status(400).json({
+        success: false,
+        message: "Invalid credentials",
+      });
 
     if (!user.isVerified)
-      return res.status(403).json({ success: false, message: "Verify email first" });
+      return res.status(403).json({
+        success: false,
+        message: "Verify email first",
+      });
 
     const valid = await bcrypt.compare(password, user.password);
+
     if (!valid)
-      return res.status(400).json({ success: false, message: "Invalid credentials" });
+      return res.status(400).json({
+        success: false,
+        message: "Invalid credentials",
+      });
 
     const token = jwt.sign(
       { userId: user._id, role: user.role },
@@ -125,9 +183,13 @@ export const login = async (req, res) => {
         role: user.role,
       },
     });
+
   } catch (error) {
     console.error("❌ LOGIN ERROR:", error.message);
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
@@ -137,18 +199,32 @@ export const resendOTP = async (req, res) => {
     const { email } = req.body;
 
     const user = await user1.findOne({ email });
+
     if (!user)
-      return res.status(404).json({ success: false, message: "User not found" });
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
 
     if (user.isVerified)
-      return res.status(400).json({ success: false, message: "Already verified" });
+      return res.status(400).json({
+        success: false,
+        message: "Already verified",
+      });
 
     await sendOTP(user);
 
-    res.json({ success: true, message: "OTP resent" });
+    res.json({
+      success: true,
+      message: "OTP resent",
+    });
+
   } catch (error) {
     console.error("❌ RESEND OTP ERROR:", error.message);
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
@@ -158,15 +234,26 @@ export const forgotPassword = async (req, res) => {
     const { email } = req.body;
 
     const user = await user1.findOne({ email });
+
     if (!user)
-      return res.status(404).json({ success: false, message: "User not found" });
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
 
     await sendOTP(user, "reset");
 
-    res.json({ success: true, message: "OTP sent for password reset" });
+    res.json({
+      success: true,
+      message: "OTP sent for password reset",
+    });
+
   } catch (error) {
     console.error("❌ FORGOT PASSWORD ERROR:", error.message);
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
@@ -176,36 +263,38 @@ export const resetPassword = async (req, res) => {
     const { email, otp, newPassword } = req.body;
 
     const user = await user1.findOne({ email });
+
     if (!user)
-      return res.status(404).json({ success: false, message: "User not found" });
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
 
     if (!user.otp || user.otp !== otp || user.otpExpires < Date.now())
-      return res.status(400).json({ success: false, message: "Invalid or expired OTP" });
+      return res.status(400).json({
+        success: false,
+        message: "Invalid or expired OTP",
+      });
 
     user.password = await bcrypt.hash(newPassword, 10);
     user.otp = undefined;
     user.otpExpires = undefined;
+
     await user.save();
 
-    res.json({ success: true, message: "Password updated successfully" });
+    res.json({
+      success: true,
+      message: "Password updated successfully",
+    });
+
   } catch (error) {
     console.error("❌ RESET PASSWORD ERROR:", error.message);
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 /* ========== ADMIN STATS ========== */
 export const adminStats = async (req, res) => {
@@ -218,7 +307,8 @@ export const adminStats = async (req, res) => {
       totalUsers,
       verifiedUsers,
     });
-  } catch (error) {
+
+  } catch {
     res.status(500).json({ success: false });
   }
 };
@@ -228,7 +318,11 @@ export const getAllUsers = async (req, res) => {
   try {
     const users = await user1.find().sort({ createdAt: -1 });
 
-    res.json({ success: true, users });
+    res.json({
+      success: true,
+      users,
+    });
+
   } catch {
     res.status(500).json({ success: false });
   }
@@ -250,6 +344,7 @@ export const deleteUser = async (req, res) => {
       success: true,
       message: "User deleted",
     });
+
   } catch {
     res.status(500).json({ success: false });
   }
